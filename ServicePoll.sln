@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServicePoll", "ServicePoll\ServicePoll.csproj", "{D772FC9F-DA69-49E5-A26E-F2DD38F8D93B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maintenance", "Maintenance\Maintenance.csproj", "{3BE0B9DE-69A3-4FD3-8044-508ABEDC5C42}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D772FC9F-DA69-49E5-A26E-F2DD38F8D93B} = {D772FC9F-DA69-49E5-A26E-F2DD38F8D93B}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D772FC9F-DA69-49E5-A26E-F2DD38F8D93B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D772FC9F-DA69-49E5-A26E-F2DD38F8D93B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D772FC9F-DA69-49E5-A26E-F2DD38F8D93B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D772FC9F-DA69-49E5-A26E-F2DD38F8D93B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BE0B9DE-69A3-4FD3-8044-508ABEDC5C42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BE0B9DE-69A3-4FD3-8044-508ABEDC5C42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BE0B9DE-69A3-4FD3-8044-508ABEDC5C42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BE0B9DE-69A3-4FD3-8044-508ABEDC5C42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

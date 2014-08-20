@@ -1,0 +1,339 @@
+﻿<!DOCTYPE html>
+<html style="height: 100%;">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <title>Опрос</title>
+</head>
+<body style="margin: 0; padding: 0; height: 100%;">
+    <div id="avalibale-polls-container" style="height: 100%; padding: 10px;">
+        <b>Список доступных опросов:</b>
+        <ol id="avalibale-polls"></ol>
+    </div>
+
+    <div id="selected-poll" style="height: 100%; display: none; overflow: hidden;">
+        <div id="poll-content">
+            <div style="display: none;">
+                <div>Ваш ID: <span id="user-id"></span></div>
+                <div>Номер опроса: <span id="poll-id"></span></div>
+            </div>
+            <div style="text-align:center;">
+                <div><span id="poll-title"></span> <a id="poll-url"></a></div>
+                <div id="poll-answers"></div>
+                <button id="poll-skip">Пропустить</button>
+                <button id="poll-ok">Ответить</button>
+            </div>
+        </div>
+        <iframe id="poll-prewiev" frameborder="0" sandbox="allow-forms allow-scripts"></iframe>
+    </div>
+
+    <div id="finishd-poll" style="height: 100%; display: none;">
+        <b>Опрос завершен</b>
+        <br />
+        <a href="/">На главную</a>
+    </div>
+    <script type="text/javascript">
+        var issue = {};
+        var answers = [];
+        var url = '';
+        var pollId = null;
+        var answerId = null;
+
+        var viewType = [
+            finishdPoll = document.getElementById('finishd-poll'),          // fpoll
+            selectedPoll = document.getElementById('selected-poll')         // spoll
+        ];
+        var viewManager = function (typeName) {
+            for (var i = 0; i < viewType.length; i++) {
+                viewType[i].style.display = 'none';
+            }
+
+            switch (typeName) {
+                case 'spoll': viewType[1].style.display = 'block'; break;
+                case 'fpoll': viewType[0].style.display = 'block'; break;
+            }
+        }
+
+        var pollListContainer = document.getElementById('avalibale-polls-container');
+        var pollList = document.getElementById('avalibale-polls');
+
+
+        //#region GET-функции
+
+        // Получить объект XMLHttpRequest
+        var getXmlHttp = function () {
+            var xmlhttp;
+            try {
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (E) {
+                    xmlhttp = false;
+                }
+            }
+            if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
+                xmlhttp = new XMLHttpRequest();
+            }
+            return xmlhttp;
+        }
+
+        // Получить данные в формате JSON
+        var getData = function (url, successCallback, errorCallback) {
+            var query = new getXmlHttp();
+            query.open('GET', url, true);
+            query.setRequestHeader('Content-Type', 'application/json');
+            query.setRequestHeader('Accept', '*/*');
+            query.onreadystatechange = function () {
+                if (query.readyState == 4) {
+                    if (query.status == 200) {
+                        if (successCallback) {
+                            var result = JSON.parse(query.responseText);
+                            successCallback(result);
+                        } else {
+                            console.log('missed success callback in arguments');
+                        }
+                    }
+                    if (query.status == 500) {
+                        if (errorCallback) {
+                            errorCallback();
+                        } else {
+                            console.log('missed error callback in arguments');
+                        }
+                    }
+                }
+            }
+            query.send(null);
+        }
+
+        // Получить cookie
+        var getCookie = function (name) {
+            var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        //#endregion
+
+        //#region Работа с опросами
+
+        // Подготовка данных для опросов
+        var initPolls = function () {
+            var pollFromUrl = location.pathname.slice(1);
+            if (pollFromUrl) {
+                pollId = pollFromUrl;
+                activatePoll();
+            } else {
+                getData('api/pollapi', fillPollList);
+            }
+        }
+
+        // Рендер HTML списка опросов
+        var fillPollList = function (response) {
+            var fragment = document.createDocumentFragment();
+
+            for (var i = 0; i < response.length; i++) {
+                var li = document.createElement('li');
+                var a = document.createElement('a');
+                var text = document.createTextNode(response[i].Name);
+
+                a.setAttribute('href', response[i].Id);
+                a.appendChild(text);
+
+                li.appendChild(a);
+
+                fragment.appendChild(li);
+            }
+
+            pollList.appendChild(fragment);
+        }
+
+        //#endregion
+
+        //#region Работа с опросом
+
+        var clearAnswerAndDisableOkBtn = function () {
+            var radioGroup = document.getElementsByName('answers');
+            var pollOk = document.getElementById('poll-ok');
+
+            for (i = 0; i < radioGroup.length; i++) {
+                radioGroup[i].checked = false;
+            }
+
+            pollOk.disabled = true;
+            answerId = null;
+        }
+
+        // Обработчик события по клику на вариант ответа
+        var selectAnswerClick = function (event) {
+            var event = event || window.event;
+            var target = event.srcElement || event.target;
+            var pollOk = document.getElementById('poll-ok');
+
+            pollOk.disabled = false;
+            answerId = target.value;
+        }
+
+        // Обработчик события по клику на кнопк Skip
+        var skipPollClick = function (event) {
+            getData("api/" + pollId + "/skip?url=" + url, function (data) {
+                if (data) {
+                    url = data;
+                    document.getElementById('poll-prewiev').src = url;
+                    document.getElementById('poll-url').innerText = url;
+                } else {
+                    url = null;
+                    viewManager('fpoll');
+                }
+            });
+
+            clearAnswerAndDisableOkBtn();
+        }
+
+        // Обработчик события по клику на кнопк ok
+        var okPollClick = function (event) {
+            getData('api/' + pollId + '/ok?url=' + url + '&IssueId=' + issue.id + '&answerId=' + answerId, function (data) {
+                if (data) {
+                    url = data;
+                    document.getElementById('poll-url').innerText = url;
+                    document.getElementById('poll-prewiev').src = url;
+                } else {
+                    url = null;
+                    viewManager('fpoll');
+                }
+            });
+
+            clearAnswerAndDisableOkBtn();
+        }
+
+        // Рендер HTML опроса
+        var fillPoll = function () {
+            var userId = document.getElementById('user-id');
+            var poll = document.getElementById('poll-id');
+            var pollUrl = document.getElementById('poll-url');
+            var pollTitle = document.getElementById('poll-title');
+            var pollAnswers = document.getElementById('poll-answers');
+            var pollSkip = document.getElementById('poll-skip');
+            var pollOk = document.getElementById('poll-ok');
+            var pollPreview = document.getElementById('poll-prewiev');
+
+            userId.innerText = getCookie('_id');
+
+            pollUrl.innerText = url;
+            pollUrl.setAttribute('href', url);
+
+            poll.innerText = pollId;
+
+            pollTitle.innerText = issue.name;
+
+            pollSkip.onclick = skipPollClick;
+            pollOk.onclick = okPollClick;
+            pollOk.disabled = true;
+
+            var answerElements = document.createDocumentFragment();
+            var answerContainer;
+            var answerRadioButton;
+            var answerLabel;
+
+            while (pollAnswers.firstChild) {
+                pollAnswers.removeChild(pollAnswers.firstChild);
+            }
+
+            for (var i = 0; i < answers.length; i++) {
+                answerRadioButton = document.createElement('input');
+                answerRadioButton.setAttribute('type', 'radio');
+                answerRadioButton.setAttribute('name', 'answers');
+                answerRadioButton.setAttribute('value', answers[i].id);
+                answerRadioButton.setAttribute('id', answers[i].id);
+                answerRadioButton.onclick = selectAnswerClick;
+
+                answerLabel = document.createElement('label');
+                answerLabel.setAttribute('for', answers[i].id);
+                answerLabel.innerText = answers[i].name;
+
+                answerContainer = document.createElement('span');
+                answerContainer.appendChild(answerRadioButton);
+                answerContainer.appendChild(answerLabel);
+
+                answerElements.appendChild(answerContainer);
+            }
+
+            pollAnswers.appendChild(answerElements);
+
+
+            var h = document.getElementById('selected-poll').offsetHeight;
+            var hp = document.getElementById('poll-content').offsetHeight;
+
+            pollPreview.style.height = h - hp + 'px';
+            pollPreview.style.width = '100%';
+            pollPreview.src = url;
+        }
+
+        // Получить вопрос
+        var getIssue = function (response) {
+            var rawIssue = response.Issue;
+            var rawAnswers = response.Answers;
+
+            issue = { id: rawIssue.Id, name: rawIssue.Name };
+
+            for (var i = 0; i < rawAnswers.length; i++) {
+                answers.push({ id: rawAnswers[i].Id, name: rawAnswers[i].Name });
+            }
+
+            if (url == null) {
+                viewManager('fpoll');
+            } else if (url.length > 0) {
+                viewManager('spoll');
+                fillPoll();
+            }
+        }
+
+        // Получить url
+        var getUrl = function (response) {
+            url = response;
+
+            if (url == null) {
+                viewManager('fpoll');
+            } else if (answers.length > 0) {
+                viewManager('spoll');
+                fillPoll();
+            }
+        }
+
+        // Активировать конкретный опрос
+        var activatePoll = function (event) {
+            issue = {};
+            answers = [];
+            url = '';
+
+            if (pollId) {
+                pollListContainer.style.display = 'none';
+                getData("api/" + pollId + "/next", getUrl);
+                getData("api/" + pollId + "/issue", getIssue);
+            }
+        }
+
+        //#endregion
+
+
+        //Обработка нажатий на клавиатуру
+        //document.onkeyup = function (event) {//97-105 49-57
+        //    var code = event.keyCode;
+        //    if (code == 36) document.location.href = "/";
+        //    var number;
+        //    if (code > 48 && code < 58) {
+        //        number = code - 49;
+        //    } else if (code > 96 && code < 106) {
+        //        number = code - 97;
+        //    } else return;
+        //    var ol = document.getElementById("avalibale-polls").childNodes;
+        //    var len = ol.length;
+        //    if (len > 0 && len >= number) {
+        //        var url = ol.item(number).firstChild.attributes['href'].value;
+        //        document.location.href = url;
+        //    }
+        //}
+
+        window.onload = initPolls;
+    </script>
+</body>
+</html>
