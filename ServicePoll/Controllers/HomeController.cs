@@ -1,11 +1,4 @@
-﻿using ServicePoll.Logic;
-using ServicePoll.Models;
-using ServicePoll.Repository.Mongo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Http;
+﻿using ServicePoll.Config;
 using System.Web.Mvc;
 
 namespace ServicePoll.Controllers
@@ -14,6 +7,7 @@ namespace ServicePoll.Controllers
     {
         public ActionResult Index()
         {
+            var str = ServicePollConfig.TempCollectionName;
             return View();
         }
     }

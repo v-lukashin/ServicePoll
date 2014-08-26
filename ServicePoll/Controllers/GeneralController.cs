@@ -1,37 +1,32 @@
-﻿using ServicePoll.Logic;
+﻿using MongoDB.Bson;
+using ServicePoll.Config;
 using ServicePoll.Models;
 using ServicePoll.Repository;
-using ServicePoll.Logic;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Web;
 using System.Web.Http;
-using MongoDB.Bson;
-using ServicePoll.Repository.Mongo;
 
 namespace ServicePoll.Controllers
 {
     [RoutePrefix("api")]
     public class GeneralController : ApiController
     {
-        private const int _countTake = 2;
-        private IRep<Poll> _pollRepository;
+        private int _countTake;
+        private RepositoryGeneric<Poll> _pollRepository;
         private ItemRepository _itemRepository;
         private IssueRepository _issueRepository;
-        private IRep<Result> _resultRepository;
+        private RepositoryGeneric<Result> _resultRepository;
         private AnswerRepository _answerRepository;
 
-        public GeneralController(IRep<Poll> pollRep, ItemRepository itemRep, IssueRepository issueRep, IRep<Result> resRep, AnswerRepository ansRep)
+        public GeneralController(RepositoryGeneric<Poll> pollRep, ItemRepository itemRep, IssueRepository issueRep, RepositoryGeneric<Result> resRep, AnswerRepository ansRep)
         {
             _pollRepository = pollRep;
             _itemRepository = itemRep;
             _issueRepository = issueRep;
             _resultRepository = resRep;
             _answerRepository = ansRep;
+            _countTake = ServicePollConfig.CountTake;
         }
 
         [Route("/{pollId}/ok")]

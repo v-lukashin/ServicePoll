@@ -1,31 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServicePoll.Logic;
-using ServicePoll.Repository.Mongo;
+﻿using ServicePoll;
+using ServicePoll.Config;
 using ServicePoll.Models;
-
-namespace Maintenance
+using ServicePoll.Repository;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+namespace ServicePoll.Maintenance
 {
     class Program
     {
         static void Main(string[] args)
         {
+            var debug = false;
             while (true)
             {
                 try
                 {
                     Console.WriteLine("Введите название опроса или exit для выхода:");
                     var pollName = Console.ReadLine();
-                    if (pollName.ToLower() == "exit")
+                    
+                    if(pollName.ToLower() == "debug"){
+                        Console.WriteLine("Debug mode: On");
+                        debug = true;
+                    }
+                    else if (pollName.ToLower() == "exit")
                     {
                         break;
                     }
                     else
                     {
-                        Console.WriteLine("Введите лимит количества респондентов:");
+                        Console.WriteLine("Введите число респондентов, необходимых для одного URL:");
                         var limit = int.Parse(Console.ReadLine());
                         Console.WriteLine("Введите количество сайтов для опроса:");
                         var urlCount = int.Parse(Console.ReadLine());
@@ -39,29 +43,27 @@ namespace Maintenance
                             if (ans.ToLower() == "end") break;
                             answers.Add(ans);
                         }
-                        FillWithMaintenance(pollName, limit, urlCount, issueName, answers);
+                        FillWithMaintenance(pollName, limit, urlCount, issueName, answers, debug);
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Ошибка. Попробуйте снова. Проверьте подключение к базе данных и вводимые данные.");
+                    Console.WriteLine("Ошибка: {0}\nПопробуйте снова. Проверьте подключение к базе данных и вводимые данные.", e);
                 }
             }
         }
-        private static void FillWithMaintenance(string pollName, int limit, int urlCount, string issueName, IEnumerable<string> answerNames)
+        private static void FillWithMaintenance(string pollName, int limit, int urlCount, string issueName, IEnumerable<string> answerNames, bool isDebug)
         {
-            string connStr = "mongodb://localhost:27017/polls";
-            Repository<Poll> pollRep = new Repository<Poll>(new MongoDb<Poll>(connStr));
-            ItemRepository ItemRep = new ItemRepository(new MongoDb<Item>(connStr));
-            SiteIndexRepository siRep = new SiteIndexRepository();
-            IssueRepository IssueRep = new IssueRepository(new MongoDb<Issue>(connStr));
-            AnswerRepository AnswerRep = new AnswerRepository(new MongoDb<Answer>(connStr));
+            string connStr = ServicePollConfig.PollConnectionString;//"mongodb://localhost:27017/polls";
+            RepositoryGeneric<Poll> pollRep = new RepositoryGeneric<Poll>(new MongoDb<Poll>(connStr));
+            ItemRepository itemRep = new ItemRepository(new MongoDb<Item>(connStr));
+            TempUrlRepository tempRep = new TempUrlRepository(new MongoDb<TempUrl>(ServicePollConfig.TempConnectionString));
+            IssueRepository issueRep = new IssueRepository(new MongoDb<Issue>(connStr));
+            AnswerRepository answerRep = new AnswerRepository(new MongoDb<Answer>(connStr));
 
-            var maint = new Maintenance(pollRep, ItemRep, siRep);
-            Poll poll = new Poll(pollName, limit);
-            pollRep.Create(poll);
+            Poll poll = new Poll(pollName, limit, true);
 
-            maint.Processing(poll.Id, urlCount);
+            var urlList = Maintenance.Processing(tempRep, poll.Id, urlCount);
 
             Issue issue = new Issue(issueName, poll.Id, IssueType.Single);
             List<Answer> answers = new List<Answer>();
@@ -69,11 +71,22 @@ namespace Maintenance
             {
                 answers.Add(new Answer(answ, issue.Id));
             }
-            IssueRep.Create(issue);
-            foreach (var ans in answers)
+
+            if (!isDebug)
             {
-                AnswerRep.Create(ans);
+                pollRep.Create(poll);
+                foreach (var url in urlList)
+                {
+                    itemRep.Create(new Item(url, poll.Id));
+                }
+
+                issueRep.Create(issue);
+                foreach (var ans in answers)
+                {
+                    answerRep.Create(ans);
+                }
             }
+            else Console.WriteLine("Nothing is saved (Debug mode)");
         }
     }
 }

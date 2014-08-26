@@ -3,9 +3,9 @@ using Ninject;
 using Ninject.Activation;
 using Ninject.Parameters;
 using Ninject.Syntax;
+using ServicePoll.Config;
 using ServicePoll.Models;
 using ServicePoll.Repository;
-using ServicePoll.Repository.Mongo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +24,11 @@ namespace ServicePoll.Infrastructure
         }
         private void AddBindings()
         {
-            _kernel.Bind<IRep<Poll>>().To<Repository<Poll>>();
-            _kernel.Bind<IRep<Result>>().To<Repository<Result>>();
+            _kernel.Bind<MongoDb<Poll>>().ToConstructor<MongoDb<Poll>>(x => new MongoDb<Poll>(ServicePollConfig.PollConnectionString));
+            _kernel.Bind<MongoDb<Answer>>().ToConstructor<MongoDb<Answer>>(x => new MongoDb<Answer>(ServicePollConfig.PollConnectionString));
+            _kernel.Bind<MongoDb<Issue>>().ToConstructor<MongoDb<Issue>>(x => new MongoDb<Issue>(ServicePollConfig.PollConnectionString));
+            _kernel.Bind<MongoDb<Item>>().ToConstructor<MongoDb<Item>>(x => new MongoDb<Item>(ServicePollConfig.PollConnectionString));
+            _kernel.Bind<MongoDb<Result>>().ToConstructor<MongoDb<Result>>(x => new MongoDb<Result>(ServicePollConfig.PollConnectionString));
         }
         public IDependencyScope BeginScope()
         {

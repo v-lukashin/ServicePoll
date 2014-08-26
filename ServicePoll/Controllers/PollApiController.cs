@@ -1,21 +1,17 @@
 ﻿using ServicePoll.Models;
-using System;
+using ServicePoll.Repository;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
-using ServicePoll.Repository;
-using ServicePoll.Logic;
 
 namespace ServicePoll.Controllers
 {
     [RoutePrefix("api/poll")]
     public class PollApiController : ApiController
     {
-        private IRep<Poll> _pollRepository;
+        private RepositoryGeneric<Poll> _pollRepository;
 
-        public PollApiController(IRep<Poll> pollRep)
+        public PollApiController(RepositoryGeneric<Poll> pollRep)
         {
             _pollRepository = pollRep;
         }

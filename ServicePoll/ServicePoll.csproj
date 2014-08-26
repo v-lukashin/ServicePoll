@@ -76,6 +76,18 @@
     <Reference Include="Ninject">
       <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.2.5.2\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector.Diagnostics">
+      <HintPath>..\packages\SimpleInjector.2.5.2\lib\net45\SimpleInjector.Diagnostics.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector.Integration.Web">
+      <HintPath>..\packages\SimpleInjector.Integration.Web.2.5.2\lib\net40\SimpleInjector.Integration.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector.Integration.Web.Mvc">
+      <HintPath>..\packages\SimpleInjector.Integration.Web.Mvc.2.5.2\lib\net40\SimpleInjector.Integration.Web.Mvc.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -202,23 +214,7 @@
     </Compile>
     <Compile Include="Infrastructure\DependencyResolver.cs" />
     <Compile Include="Infrastructure\Scope.cs" />
-    <Compile Include="Logic\Util.cs" />
-    <Compile Include="Models\Abstract\ElementDb.cs" />
-    <Compile Include="Models\Answer.cs" />
-    <Compile Include="Models\MongoDb.cs" />
-    <Compile Include="Models\IssueType.cs" />
-    <Compile Include="Models\Issue.cs" />
-    <Compile Include="Models\Item.cs" />
-    <Compile Include="Models\Result.cs" />
-    <Compile Include="Models\Poll.cs" />
-    <Compile Include="Models\SiteIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repository\Mongo\AnswerRepository.cs" />
-    <Compile Include="Repository\IRep.cs" />
-    <Compile Include="Repository\Mongo\IssueRepository.cs" />
-    <Compile Include="Repository\Mongo\Abstract\Repository.cs" />
-    <Compile Include="Repository\Mongo\ItemRepository.cs" />
-    <Compile Include="Repository\Mongo\SiteIndexRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
@@ -243,6 +239,9 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
+    <Content Include="Config\servicepoll.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Scripts\jquery-2.1.1.intellisense.js" />
     <Content Include="Scripts\jquery-2.1.1.js" />
     <Content Include="Scripts\jquery-2.1.1.min.js" />
@@ -284,6 +283,23 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Config\Config.csproj">
+      <Project>{3058354e-9857-4e45-9081-fe40579dc104}</Project>
+      <Name>Config</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Models\Models.csproj">
+      <Project>{d329303d-3f19-4774-8cad-179b72feb6ff}</Project>
+      <Name>Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Repository\Repository.csproj">
+      <Project>{e22ee599-1967-47c4-95a9-dff62ca7528b}</Project>
+      <Name>Repository</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
