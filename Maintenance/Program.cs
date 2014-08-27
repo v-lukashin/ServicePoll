@@ -1,10 +1,10 @@
-﻿using ServicePoll;
+﻿using System.Linq;
 using ServicePoll.Config;
 using ServicePoll.Models;
 using ServicePoll.Repository;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
+
 namespace ServicePoll.Maintenance
 {
     class Program
@@ -54,23 +54,19 @@ namespace ServicePoll.Maintenance
         }
         private static void FillWithMaintenance(string pollName, int limit, int urlCount, string issueName, IEnumerable<string> answerNames, bool isDebug)
         {
-            string connStr = ServicePollConfig.PollConnectionString;//"mongodb://localhost:27017/polls";
-            RepositoryGeneric<Poll> pollRep = new RepositoryGeneric<Poll>(new MongoDb<Poll>(connStr));
-            ItemRepository itemRep = new ItemRepository(new MongoDb<Item>(connStr));
-            TempUrlRepository tempRep = new TempUrlRepository(new MongoDb<TempUrl>(ServicePollConfig.TempConnectionString));
-            IssueRepository issueRep = new IssueRepository(new MongoDb<Issue>(connStr));
-            AnswerRepository answerRep = new AnswerRepository(new MongoDb<Answer>(connStr));
+            var connStr = ServicePollConfig.PollConnectionString;//"mongodb://localhost:27017/polls";
+            var pollRep = new RepositoryGeneric<Poll>(new MongoDb<Poll>(connStr));
+            var itemRep = new ItemRepository(new MongoDb<Item>(connStr));
+            var tempRep = new TempUrlRepository(new MongoDb<TempUrl>(ServicePollConfig.TempConnectionString));
+            var issueRep = new IssueRepository(new MongoDb<Issue>(connStr));
+            var answerRep = new AnswerRepository(new MongoDb<Answer>(connStr));
 
-            Poll poll = new Poll(pollName, limit, true);
+            var poll = new Poll(pollName, limit, true);
 
             var urlList = Maintenance.Processing(tempRep, poll.Id, urlCount);
 
-            Issue issue = new Issue(issueName, poll.Id, IssueType.Single);
-            List<Answer> answers = new List<Answer>();
-            foreach (var answ in answerNames)
-            {
-                answers.Add(new Answer(answ, issue.Id));
-            }
+            var issue = new Issue(issueName, poll.Id, IssueType.Single);
+            var answers = answerNames.Select(answ => new Answer(answ, issue.Id)).ToList();
 
             if (!isDebug)
             {

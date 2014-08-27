@@ -9,7 +9,7 @@ namespace ServicePoll.Controllers
     [RoutePrefix("api/poll")]
     public class PollApiController : ApiController
     {
-        private RepositoryGeneric<Poll> _pollRepository;
+        private readonly RepositoryGeneric<Poll> _pollRepository;
 
         public PollApiController(RepositoryGeneric<Poll> pollRep)
         {

@@ -1,9 +1,6 @@
 ﻿using MongoDB.Driver.Builders;
 using ServicePoll.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace ServicePoll.Repository
 {
@@ -14,7 +11,7 @@ namespace ServicePoll.Repository
         public IEnumerable<Answer> GetByIssueId(string issueId)
         {
             var q = Query<Answer>.EQ(x => x.IssueId, issueId);
-            var result = _collect.Find(q);
+            var result = Collect.Find(q);
             return result;
         }
     }

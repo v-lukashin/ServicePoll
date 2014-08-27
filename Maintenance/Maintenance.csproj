@@ -64,9 +64,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <Content Include="..\Config\servicepoll.config">
-	  <Link>Config\servicepoll.config</Link>
+      <Link>Config\servicepoll.config</Link>
+      <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <ItemGroup>

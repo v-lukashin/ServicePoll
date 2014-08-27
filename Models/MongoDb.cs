@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using MongoDB.Driver;
-using MongoDB.Driver.Builders;
+﻿using MongoDB.Driver;
 
 namespace ServicePoll.Models
 {
     public class MongoDb<T>
     {
-        private MongoDatabase _db;
+        private readonly MongoDatabase _db;
         public MongoDb(string connStr)
         {
-            MongoUrl url = new MongoUrl(connStr);
-            MongoClient cli = new MongoClient(url);
-            MongoServer serv = cli.GetServer();
+            var url = new MongoUrl(connStr);
+            var cli = new MongoClient(url);
+            var serv = cli.GetServer();
             _db = serv.GetDatabase(url.DatabaseName);
         }
         public MongoCollection<T> Collection

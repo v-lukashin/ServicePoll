@@ -12,12 +12,12 @@ namespace ServicePoll.Controllers
     [RoutePrefix("api")]
     public class GeneralController : ApiController
     {
-        private int _countTake;
-        private RepositoryGeneric<Poll> _pollRepository;
-        private ItemRepository _itemRepository;
-        private IssueRepository _issueRepository;
-        private RepositoryGeneric<Result> _resultRepository;
-        private AnswerRepository _answerRepository;
+        private readonly int _countTake;
+        private readonly RepositoryGeneric<Poll> _pollRepository;
+        private readonly ItemRepository _itemRepository;
+        private readonly IssueRepository _issueRepository;
+        private readonly RepositoryGeneric<Result> _resultRepository;
+        private readonly AnswerRepository _answerRepository;
 
         public GeneralController(RepositoryGeneric<Poll> pollRep, ItemRepository itemRep, IssueRepository issueRep, RepositoryGeneric<Result> resRep, AnswerRepository ansRep)
         {
@@ -41,7 +41,7 @@ namespace ServicePoll.Controllers
             }
             catch (Exception e) { return BadRequest(e.Message); }
 
-            Result res = new Result
+            var res = new Result
             {
                 AnswerId = answerId,
                 IssueId = issueId,
@@ -86,9 +86,9 @@ namespace ServicePoll.Controllers
         }
 
         [NonAction]
-        private string GetRespondentId()
+        private static string GetRespondentId()
         {
-            string res = HttpContext.Current.GetCookie("_id");
+            var res = HttpContext.Current.GetCookie("_id");
             if (string.IsNullOrEmpty(res))
             {
                 res = ObjectId.GenerateNewId().ToString();
@@ -104,9 +104,9 @@ namespace ServicePoll.Controllers
         [NonAction]
         private string NextUrl(string pollId)//Получается сложный запрос
         {
-            string respondentId = GetRespondentId();
+            var respondentId = GetRespondentId();
             var poll = _pollRepository.Get(pollId);
-            int limit = poll.LimitRespondents;
+            var limit = poll.LimitRespondents;
 
             var urls = _itemRepository.GetNextUrl(pollId, limit, respondentId, _countTake).Shuffle();
 

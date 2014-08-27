@@ -1,9 +1,7 @@
 ﻿using MongoDB.Driver.Builders;
 using ServicePoll.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace ServicePoll.Repository
 {
@@ -15,7 +13,7 @@ namespace ServicePoll.Repository
         {
             //Ищем по сгенерированному ID
             var id = Util.GenerateIdBasedPollIdAndUrl(pollId, url);
-            var result = _collect.FindOneById(id);
+            var result = Collect.FindOneById(id);
             //Если Item не найден пробуем найти через условие 
             if (result == null)
             {
@@ -23,7 +21,7 @@ namespace ServicePoll.Repository
                     Query<Item>.EQ(x => x.PollId, pollId),
                     Query<Item>.EQ(x => x.Url, url)
                     );
-                result = _collect.FindOne(q);
+                result = Collect.FindOne(q);
             }
             return result;
         }
@@ -36,7 +34,7 @@ namespace ServicePoll.Repository
                 Query<Item>.NE(x => x.OkRespondentIdList, respondentId),
                 Query<Item>.NE(x => x.MissedRespondents, respondentId)
                 );
-            var result = _collect.Find(q).SetSortOrder("CountResults:-1").SetLimit(countTake).Select(x => x.Url);
+            var result = Collect.Find(q).SetSortOrder("CountResults:-1").SetLimit(countTake).Select(x => x.Url);
             return result;
         }
 
@@ -46,13 +44,13 @@ namespace ServicePoll.Repository
                 Query<Item>.EQ(x => x.PollId, pollId),
                 Query<Item>.LT(x => x.CountResults, limit)
                 );
-            var res = !_collect.Find(q).Any();
+            var res = !Collect.Find(q).Any();
             return res;
         }
         public void RemoveItemsByPoll(string pollId)
         {
             var q = Query<Item>.EQ(x => x.PollId, pollId);
-            _collect.Remove(q);
+            Collect.Remove(q);
         }
     }
 }

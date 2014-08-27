@@ -4,13 +4,13 @@ namespace ServicePoll.Config
 {
     public static class ServicePollConfig
     {
-        private readonly static Section _element = (Section)ConfigurationManager.GetSection("servicePoll");
+        private readonly static Section SpSection = (Section)ConfigurationManager.GetSection("servicePoll");
 
         public static string PollConnectionString
         {
             get
             {
-                return _element.PollConnectionString;
+                return SpSection.PollConnectionString;
             }
         }
 
@@ -18,7 +18,7 @@ namespace ServicePoll.Config
         {
             get
             {
-                return _element.CountTake;
+                return SpSection.CountTake;
             }
         }
 
@@ -26,7 +26,7 @@ namespace ServicePoll.Config
         {
             get
             {
-                return _element.TempConnectionString;
+                return SpSection.TempConnectionString;
             }
         }
 
@@ -34,7 +34,7 @@ namespace ServicePoll.Config
         {
             get
             {
-                return _element.TempCollectionName;
+                return SpSection.TempCollectionName;
             }
         }
 
@@ -42,7 +42,7 @@ namespace ServicePoll.Config
         {
             get
             {
-                return _element.TempFieldName;
+                return SpSection.TempFieldName;
             }
         }
     }

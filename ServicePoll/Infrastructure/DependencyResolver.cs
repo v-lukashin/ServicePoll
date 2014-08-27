@@ -1,22 +1,16 @@
 ﻿using Microsoft.Practices.ServiceLocation;
 using Ninject;
-using Ninject.Activation;
-using Ninject.Parameters;
-using Ninject.Syntax;
 using ServicePoll.Config;
 using ServicePoll.Models;
-using ServicePoll.Repository;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Http.Dependencies;
 
 namespace ServicePoll.Infrastructure
 {
     public class DependencyResolver : Scope, IDependencyResolver, IServiceLocator
     {
-        private IKernel _kernel;
+        private readonly IKernel _kernel;
         public DependencyResolver(IKernel kernel):base(kernel)
         {
             _kernel = kernel;
