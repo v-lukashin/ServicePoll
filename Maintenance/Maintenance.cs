@@ -25,17 +25,19 @@ namespace ServicePoll.Maintenance
                     {
                         uri = new Uri(url);
                     }
-                    catch (UriFormatException e) { Console.WriteLine("Невалидный Url"); continue; }
+                    catch (UriFormatException e)
+                    {
+                        Console.WriteLine("Невалидный Url");
+                        continue;
+                    }
 
                     var modifUrl = url.Replace(uri.PathAndQuery, string.Empty);
 
-                    if (!urlList.Contains(modifUrl))
-                    {
-                        urlList.Add(modifUrl);
-                        Console.Write('.');
-                    }
+                    if (urlList.Contains(modifUrl)) continue;
+                    urlList.Add(modifUrl);
+                    Console.Write('.');
                 }
-                else { break; }
+                else break;
             }
             sw.Stop();
             Console.WriteLine("завершил. Время работы : {0}ms", sw.ElapsedMilliseconds);

@@ -2,8 +2,8 @@
 {
     public enum IssueType
     {
-        Single//,
-        //Multi,
-        //Tree
+        Single,
+        Multi,
+        Tree
     }
 }
