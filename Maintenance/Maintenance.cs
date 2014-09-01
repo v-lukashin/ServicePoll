@@ -1,4 +1,5 @@
-﻿using ServicePoll.Repository;
+﻿using System.Text.RegularExpressions;
+using ServicePoll.Repository;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,22 +21,10 @@ namespace ServicePoll.Maintenance
             {
                 if (urlList.Count < limitItems)
                 {
-                    Uri uri;
-                    try
-                    {
-                        uri = new Uri(url);
-                    }
-                    catch (UriFormatException e)
-                    {
-                        Console.WriteLine("Невалидный Url");
-                        continue;
-                    }
-
-                    var modifUrl = url.Replace(uri.PathAndQuery, string.Empty);
+                    var modifUrl = new Regex(@"(?<=[-\w.]+)/.*").Replace(url, string.Empty);//url.Replace(uri.PathAndQuery, string.Empty);
 
                     if (urlList.Contains(modifUrl)) continue;
                     urlList.Add(modifUrl);
-                    Console.Write('.');
                 }
                 else break;
             }

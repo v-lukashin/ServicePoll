@@ -52,5 +52,25 @@ namespace ServicePoll.Models
                 get { return _local ?? (_local = new Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
             }
         }
+
+        public static void GetFieldNameAndExpression(FieldName fName, out string name, out Func<TempUrl, string> expr)
+        {
+            switch (fName)
+            {
+                case FieldName.PageUrl:
+                    name = "PageUrl";
+                    expr = x => x.PageUrl;
+                    return;
+                case FieldName.Uri:
+                    name = "Uri";
+                    expr = x => x.Uri;
+                    return;
+                case FieldName.Url:
+                    name = "Url";
+                    expr = x => x.Url;
+                    return;
+            }
+            throw new Exception(string.Format("Поле с именем {0} не поддерживается", fName));
+        }
     }
 }

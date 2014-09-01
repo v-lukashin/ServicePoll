@@ -6,5 +6,6 @@ namespace ServicePoll.Models
     {
         public string PageUrl { get; set; }
         public string Url { get; set; }
+        public string Uri { get; set; }
     }
 }

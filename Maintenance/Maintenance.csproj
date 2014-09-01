@@ -47,14 +47,30 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Configuration">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Maintenance.cs" />
@@ -70,17 +86,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Config\Config.csproj">
+    <ProjectReference Include="..\Config\ServicePoll.Config.csproj">
       <Project>{3058354e-9857-4e45-9081-fe40579dc104}</Project>
-      <Name>Config</Name>
+      <Name>ServicePoll.Config</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Models\Models.csproj">
+    <ProjectReference Include="..\Models\ServicePoll.Models.csproj">
       <Project>{d329303d-3f19-4774-8cad-179b72feb6ff}</Project>
-      <Name>Models</Name>
+      <Name>ServicePoll.Models</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Repository\Repository.csproj">
+    <ProjectReference Include="..\Repository\ServicePoll.Repository.csproj">
       <Project>{e22ee599-1967-47c4-95a9-dff62ca7528b}</Project>
-      <Name>Repository</Name>
+      <Name>ServicePoll.Repository</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

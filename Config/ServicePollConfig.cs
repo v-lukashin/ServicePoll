@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using ServicePoll.Models;
+using System.Configuration;
 
 namespace ServicePoll.Config
 {
@@ -38,7 +39,7 @@ namespace ServicePoll.Config
             }
         }
 
-        public static string TempFieldName
+        public static FieldName TempFieldName
         {
             get
             {
@@ -126,11 +127,11 @@ namespace ServicePoll.Config
         /// Имя поля, из которого будем брать Url
         /// </summary>
         [ConfigurationProperty(_tempFieldName)]
-        public string TempFieldName
+        public FieldName TempFieldName
         {
             get
             {
-                return (string)this[_tempFieldName]; 
+                return (FieldName)this[_tempFieldName]; 
             }
             set
             {
