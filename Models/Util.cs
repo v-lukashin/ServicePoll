@@ -70,7 +70,7 @@ namespace ServicePoll.Models
                     expr = x => x.Url;
                     return;
             }
-            throw new Exception(string.Format("Поле с именем {0} не поддерживается", fName));
+            throw new Exception(string.Format("Поле с именем {0} не поддерживается", fName));//Ошибка будет раньше, при обращении к конфигу
         }
     }
 }

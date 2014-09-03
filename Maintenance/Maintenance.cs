@@ -12,16 +12,17 @@ namespace ServicePoll.Maintenance
         {
             var urlList = new HashSet<string>();
 
-            var all = tempUrlRepository.GetShuffleUrls((int)(limitItems * 1.5)); // берем больше, т.к. много брака или повторов 
-
-            Console.Write("Подбираю URL`ы");
+            Console.Write("Подбираю URL`ы...");
 
             var sw = Stopwatch.StartNew();
+
+            var all = tempUrlRepository.GetShuffleUrls((int)(limitItems * 1.5)); // берем больше, т.к. может быть много брака или повторов 
+            
             foreach (var url in all)
             {
                 if (urlList.Count < limitItems)
                 {
-                    var modifUrl = new Regex(@"(?<=[-\w.]+)/.*").Replace(url, string.Empty);//url.Replace(uri.PathAndQuery, string.Empty);
+                    var modifUrl = new Regex(@"(?<=(https?://)?[-\w.]+)[/#?].*").Replace(url, string.Empty);//url.Replace(uri.PathAndQuery, string.Empty);
 
                     if (urlList.Contains(modifUrl)) continue;
                     urlList.Add(modifUrl);

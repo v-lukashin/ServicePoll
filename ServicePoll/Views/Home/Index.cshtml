@@ -4,6 +4,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <title>Опрос</title>
+    <style>
+        select {
+            width: 300px;
+        }
+    </style>
 </head>
 <body style="margin: 0; padding: 0; height: 100%;">
     <div id="avalibale-polls-container" style="height: 100%; padding: 10px;">
@@ -154,11 +159,13 @@
         var clearAnswerAndDisableOkBtn = function () {
             var radioGroup = document.getElementsByName('answers');
             var pollOk = document.getElementById('poll-ok');
+            var selectElement = document.getElementById('select-element');
 
-            for (i = 0; i < radioGroup.length; i++) {
+            for (var i = 0; i < radioGroup.length; i++) {
                 radioGroup[i].checked = false;
             }
 
+            if (selectElement != null) selectElement.selectedIndex = 0;
             pollOk.disabled = true;
             answerId = null;
         }
@@ -230,35 +237,62 @@
             pollOk.disabled = true;
 
             var answerElements = document.createDocumentFragment();
-            var answerContainer;
-            var answerRadioButton;
-            var answerLabel;
 
             while (pollAnswers.firstChild) {
                 pollAnswers.removeChild(pollAnswers.firstChild);
             }
 
-            for (var i = 0; i < answers.length; i++) {
-                answerRadioButton = document.createElement('input');
-                answerRadioButton.setAttribute('type', 'radio');
-                answerRadioButton.setAttribute('name', 'answers');
-                answerRadioButton.setAttribute('value', answers[i].id);
-                answerRadioButton.setAttribute('id', answers[i].id);
-                answerRadioButton.onclick = selectAnswerClick;
+            if (answers.length < 7) {
+                var answerContainer;
+                var answerLabel;
+                var answerRadioButton;
 
-                answerLabel = document.createElement('label');
-                answerLabel.setAttribute('for', answers[i].id);
-                answerLabel.innerText = answers[i].name;
+                for (var i = 0; i < answers.length; i++) {
+                    answerRadioButton = document.createElement('input');
+                    answerRadioButton.setAttribute('type', 'radio');
+                    answerRadioButton.setAttribute('name', 'answers');
+                    answerRadioButton.setAttribute('value', answers[i].id);
+                    answerRadioButton.setAttribute('id', answers[i].id);
+                    answerRadioButton.onclick = selectAnswerClick;
 
-                answerContainer = document.createElement('span');
-                answerContainer.appendChild(answerRadioButton);
-                answerContainer.appendChild(answerLabel);
+                    answerLabel = document.createElement('label');
+                    answerLabel.setAttribute('for', answers[i].id);
+                    answerLabel.innerText = answers[i].name;
 
-                answerElements.appendChild(answerContainer);
+                    answerContainer = document.createElement('span');
+                    answerContainer.appendChild(answerRadioButton);
+                    answerContainer.appendChild(answerLabel);
+
+                    answerElements.appendChild(answerContainer);
+                }
+
+                pollAnswers.appendChild(answerElements);
+
+            } else {
+                var answersSelect = document.createElement('select');
+                answersSelect.setAttribute('id', 'select-element');
+                answersSelect.onchange = selectAnswerClick;
+
+                var blank = document.createElement('option');
+                blank.innerText = 'Выберите вариант ответа';
+                blank.selected = true;
+                blank.disabled = true;
+
+                answerElements.appendChild(blank);
+
+                var answerOption;
+
+                for (i = 0; i < answers.length; i++) {
+                    answerOption = document.createElement('option');
+                    answerOption.setAttribute('value', answers[i].id);
+                    answerOption.setAttribute('id', answers[i].id);
+                    answerOption.innerText = answers[i].name;
+
+                    answerElements.appendChild(answerOption);
+                }
+                answersSelect.appendChild(answerElements);
+                pollAnswers.appendChild(answersSelect);
             }
-
-            pollAnswers.appendChild(answerElements);
-
 
             var h = document.getElementById('selected-poll').offsetHeight;
             var hp = document.getElementById('poll-content').offsetHeight;
@@ -316,22 +350,24 @@
 
 
         //Обработка нажатий на клавиатуру
-        //document.onkeyup = function (event) {//97-105 49-57
-        //    var code = event.keyCode;
-        //    if (code == 36) document.location.href = "/";
-        //    var number;
-        //    if (code > 48 && code < 58) {
-        //        number = code - 49;
-        //    } else if (code > 96 && code < 106) {
-        //        number = code - 97;
-        //    } else return;
-        //    var ol = document.getElementById("avalibale-polls").childNodes;
-        //    var len = ol.length;
-        //    if (len > 0 && len >= number) {
-        //        var url = ol.item(number).firstChild.attributes['href'].value;
-        //        document.location.href = url;
-        //    }
-        //}
+//        document.onkeyup = function (event) {
+//            var code = event.keyCode;
+//            var ch = String.fromCharCode(code);
+//            //Для начальной страницы
+//            if (code == 36) document.location.href = "/";
+//            var number;
+//            if (code > 48 && code < 58) {
+//                number = code - 49;
+//            } else if (code > 96 && code < 106) {
+//                number = code - 97;
+//            } else return;
+//            var ol = document.getElementById("avalibale-polls").childNodes;
+//            var len = ol.length;
+//            if (len > 0 && len >= number) {
+//                var url = ol.item(number).firstChild.attributes['href'].value;
+//                document.location.href = url;
+//            }
+//        }
 
         window.onload = initPolls;
     </script>
