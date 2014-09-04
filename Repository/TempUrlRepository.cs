@@ -31,6 +31,7 @@ namespace ServicePoll.Repository
                                 .SetSkip(offset)
                                 .SetLimit(limit)
                                 .Select(expr);
+            res = res.Shuffle();
             return res;
         }
     }
