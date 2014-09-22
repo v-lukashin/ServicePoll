@@ -33,17 +33,27 @@ namespace ServicePoll.Maintenance
                         var limit = int.Parse(Console.ReadLine());
                         Console.WriteLine("Введите количество сайтов для опроса:");
                         var urlCount = int.Parse(Console.ReadLine());
-                        Console.WriteLine("Введите вопрос:");
-                        var issueName = Console.ReadLine();
-                        var answers = new List<string>();
+                        var issueNames = new List<string>();
+                        var answersNames = new List<string[]>();
                         while (true)
                         {
-                            Console.WriteLine("Введите ответ или end, если Вы закончили вводить ответы:");
-                            var ans = Console.ReadLine();
-                            if (ans.ToLower() == "end") break;
-                            answers.Add(ans);
+                            Console.WriteLine("Введите вопрос или end:");
+
+                            var issueName = Console.ReadLine();
+                            if(issueName.ToLower() == "end") break;
+
+                            var answers = new List<string>();
+                            while (true)
+                            {
+                                Console.WriteLine("Введите ответ или end:");
+                                var ans = Console.ReadLine();
+                                if (ans.ToLower() == "end") break;
+                                answers.Add(ans);
+                            }
+                            issueNames.Add(issueName);
+                            answersNames.Add(answers.ToArray());
                         }
-                        FillWithMaintenance(pollName, limit, urlCount, issueName, answers, debug);
+                        FillWithMaintenance(pollName, limit, urlCount, issueNames, answersNames, debug);
                     }
                 }
                 catch (Exception e)
@@ -52,8 +62,9 @@ namespace ServicePoll.Maintenance
                 }
             }
         }
-        private static void FillWithMaintenance(string pollName, int limit, int urlCount, string issueName, IEnumerable<string> answerNames, bool isDebug)
+        private static void FillWithMaintenance(string pollName, int limit, int urlCount, IList<string> issueName, IList<string[]> answerNames, bool isDebug)
         {
+            if(issueName.Count != answerNames.Count)throw new Exception("Количество вопросов отличается от числа групп ответов");
             var connStr = ServicePollConfig.PollConnectionString;//"mongodb://localhost:27017/polls";
             var pollRep = new RepositoryGeneric<Poll>(new MongoDb<Poll>(connStr));
             var itemRep = new ItemRepository(new MongoDb<Item>(connStr));
@@ -65,9 +76,17 @@ namespace ServicePoll.Maintenance
 
             var urlList = Maintenance.Processing(tempRep, poll.Id, urlCount);
 
-            var issue = new Issue(issueName, poll.Id, IssueType.Single);
-            var answers = answerNames.Select(answ => new Answer(answ, issue.Id)).ToList();
+            var resIssues = new List<Issue>();
+            var resAnswers = new List<Answer>();
 
+            for (var i = 0; i < issueName.Count; i++)
+            {
+                var issue = new Issue(issueName[i], poll.Id, IssueType.Single);
+                var answers = answerNames[i].Select(answ => new Answer(answ, issue.Id)).ToList();    
+                resIssues.Add(issue);
+                resAnswers.AddRange(answers);
+            }
+            
             if (!isDebug)
             {
                 pollRep.Create(poll);
@@ -76,8 +95,12 @@ namespace ServicePoll.Maintenance
                     itemRep.Create(new Item(url, poll.Id));
                 }
 
-                issueRep.Create(issue);
-                foreach (var ans in answers)
+                foreach (var issue in resIssues)
+                {
+                    issueRep.Create(issue);
+                }
+
+                foreach (var ans in resAnswers)
                 {
                     answerRep.Create(ans);
                 }

@@ -33,7 +33,13 @@ namespace ServicePoll.Controllers
         [HttpGet]
         public IHttpActionResult Ok(string pollId, string url, string issueId, string answerId)
         {
-            Item item = null;
+            var issueIds = issueId.Split(',');
+            var answerIds = answerId.Split(',');
+            if (issueIds.Length != answerIds.Length)
+            {
+                return BadRequest("Количество ответов не совпадает с количеством вопросов");
+            }
+            Item item;
             var respId = GetRespondentId();
             try
             {
@@ -41,17 +47,19 @@ namespace ServicePoll.Controllers
             }
             catch (Exception e) { return BadRequest(e.Message); }
 
-            var res = new Result
+            for (var i = 0; i < issueIds.Length; i++)
             {
-                AnswerId = answerId,
-                IssueId = issueId,
-                IssueType = _issueRepository.Get(issueId).Type,
-                RespondentId = respId,
-                ItemId = item.Id
-            };
+                var res = new Result
+                {
+                    AnswerId = answerIds[i],
+                    IssueId = issueIds[i],
+                    IssueType = _issueRepository.Get(issueIds[i]).Type,
+                    RespondentId = respId,
+                    ItemId = item.Id
+                };
+                _resultRepository.Create(res);    
+            }
             item.AddOkResponse(respId);
-
-            _resultRepository.Create(res);
             _itemRepository.Update(item.Id, item);
 
             return Ok<string>(NextUrl(pollId));
@@ -79,9 +87,14 @@ namespace ServicePoll.Controllers
         [Route("{pId}/issue")]
         public IHttpActionResult Issue(string pId)//pollId
         {
-            var issue = _issueRepository.GetByPollId(pId);//пока что один, потом много 
-            var answers = _answerRepository.GetByIssueId(issue.Id).Select(x => new { x.Id, x.Name });
-            var res = new { Issue = issue, Answers = answers };
+            var issues = _issueRepository.GetByPollId(pId);//пока что один, потом много 
+
+            var res = issues.Select(issue => new
+            {
+                Issue = new { issue.Id, issue.Name},
+                Answers = _answerRepository.GetByIssueId(issue.Id).Select(x => new { x.Id, x.Name })
+            });
+
             return Ok<object>(res);
         }
 
@@ -119,18 +132,18 @@ namespace ServicePoll.Controllers
             }
             return result;
         }
-        [NonAction]
-        public void RemovePoll(string pollId)//не удаляет результаты
-        {
-            _pollRepository.Remove(pollId);
-            _itemRepository.RemoveItemsByPoll(pollId);
-            var issueId = _issueRepository.GetByPollId(pollId).Id;
-            _issueRepository.Remove(issueId);
-            var answerIdList = _answerRepository.GetByIssueId(issueId).Select(x => x.Id);
-            foreach (var id in answerIdList)
-            {
-                _answerRepository.Remove(id);
-            }
-        }
+        //        [NonAction]
+        //        public void RemovePoll(string pollId)//не удаляет результаты
+        //        {
+        //            _pollRepository.Remove(pollId);
+        //            _itemRepository.RemoveItemsByPoll(pollId);
+        //            var issueId = _issueRepository.GetByPollId(pollId).Id;
+        //            _issueRepository.Remove(issueId);
+        //            var answerIdList = _answerRepository.GetByIssueId(issueId).Select(x => x.Id);
+        //            foreach (var id in answerIdList)
+        //            {
+        //                _answerRepository.Remove(id);
+        //            }
+        //        }
     }
 }

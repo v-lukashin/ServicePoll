@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver.Builders;
 using ServicePoll.Models;
+using System.Collections.Generic;
 
 namespace ServicePoll.Repository
 {
@@ -7,10 +8,10 @@ namespace ServicePoll.Repository
     {
         public IssueRepository(MongoDb<Issue> db) : base(db) { }
 
-        public Issue GetByPollId(string pollId)
+        public IEnumerable<Issue> GetByPollId(string pollId)
         {
             var q = Query<Issue>.EQ(x => x.PollId, pollId);
-            var result = Collect.FindOne(q);
+            var result = Collect.Find(q);
             return result;
         }
     }

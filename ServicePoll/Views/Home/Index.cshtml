@@ -6,7 +6,7 @@
     <title>Опрос</title>
     <style>
         select {
-            width: 300px;
+            width: 200px;
         }
     </style>
 </head>
@@ -23,8 +23,11 @@
                 <div>Номер опроса: <span id="poll-id"></span></div>
             </div>
             <div style="text-align:center;">
-                <div><span id="poll-title"></span> <a id="poll-url"></a></div>
-                <div id="poll-answers"></div>
+                <div><a id="poll-url"></a></div>
+                <table align="center">
+                    <tr id="poll-title"></tr>
+                    <tr id="poll-answers"></tr>
+                </table>
                 <button id="poll-skip">Пропустить</button>
                 <button id="poll-ok">Ответить</button>
             </div>
@@ -38,7 +41,7 @@
         <a href="/">На главную</a>
     </div>
     <script type="text/javascript">
-        var issue = {};
+        var issue = [];
         var answers = [];
         var url = '';
         var pollId = null;
@@ -157,27 +160,29 @@
         //#region Работа с опросом
 
         var clearAnswerAndDisableOkBtn = function () {
-            var radioGroup = document.getElementsByName('answers');
-            var pollOk = document.getElementById('poll-ok');
-            var selectElement = document.getElementById('select-element');
+            for (var j = 0; j < issue.length; j++) {
+                var radioGroup = document.getElementsByName('radio-answers_' + j);
+                var selectElement = document.getElementById('select-answers_' + j);
 
-            for (var i = 0; i < radioGroup.length; i++) {
-                radioGroup[i].checked = false;
+                for (var i = 0; i < radioGroup.length; i++) {
+                    radioGroup[i].checked = false;
+                }
+                if (selectElement != null) selectElement.selectedIndex = 0;
             }
-
-            if (selectElement != null) selectElement.selectedIndex = 0;
+            var pollOk = document.getElementById('poll-ok');
             pollOk.disabled = true;
             answerId = null;
         }
 
         // Обработчик события по клику на вариант ответа
-        var selectAnswerClick = function (event) {
+        var selectAnswerClick = function (event, num) {
             var event = event || window.event;
             var target = event.srcElement || event.target;
             var pollOk = document.getElementById('poll-ok');
 
             pollOk.disabled = false;
-            answerId = target.value;
+            if (answerId == null) answerId = new Array(issue.length);
+            answerId[num] = target.value;
         }
 
         // Обработчик события по клику на кнопк Skip
@@ -198,7 +203,11 @@
 
         // Обработчик события по клику на кнопк ok
         var okPollClick = function (event) {
-            getData('api/' + pollId + '/ok?url=' + url + '&IssueId=' + issue.id + '&answerId=' + answerId, function (data) {
+            var issueIds = [];
+            for (var i = 0; i < issue.length; i++) {
+                issueIds.push(issue[i].id);
+            }
+            getData('api/' + pollId + '/ok?url=' + url + '&IssueId=' + issueIds + '&answerId=' + answerId, function (data) {
                 if (data) {
                     url = data;
                     document.getElementById('poll-url').innerText = url;
@@ -217,7 +226,6 @@
             var userId = document.getElementById('user-id');
             var poll = document.getElementById('poll-id');
             var pollUrl = document.getElementById('poll-url');
-            var pollTitle = document.getElementById('poll-title');
             var pollAnswers = document.getElementById('poll-answers');
             var pollSkip = document.getElementById('poll-skip');
             var pollOk = document.getElementById('poll-ok');
@@ -230,70 +238,24 @@
 
             poll.innerText = pollId;
 
-            pollTitle.innerText = issue.name;
-
             pollSkip.onclick = skipPollClick;
             pollOk.onclick = okPollClick;
             pollOk.disabled = true;
-
-            var answerElements = document.createDocumentFragment();
 
             while (pollAnswers.firstChild) {
                 pollAnswers.removeChild(pollAnswers.firstChild);
             }
 
-            if (answers.length < 7) {
-                var answerContainer;
-                var answerLabel;
-                var answerRadioButton;
+            for (var j = 0; j < issue.length; j++) {
 
-                for (var i = 0; i < answers.length; i++) {
-                    answerRadioButton = document.createElement('input');
-                    answerRadioButton.setAttribute('type', 'radio');
-                    answerRadioButton.setAttribute('name', 'answers');
-                    answerRadioButton.setAttribute('value', answers[i].id);
-                    answerRadioButton.setAttribute('id', answers[i].id);
-                    answerRadioButton.onclick = selectAnswerClick;
+                addTitle(issue[j].name);
 
-                    answerLabel = document.createElement('label');
-                    answerLabel.setAttribute('for', answers[i].id);
-                    answerLabel.innerText = answers[i].name;
-
-                    answerContainer = document.createElement('span');
-                    answerContainer.appendChild(answerRadioButton);
-                    answerContainer.appendChild(answerLabel);
-
-                    answerElements.appendChild(answerContainer);
+                if (answers[j].length < 5) {
+                    createRadioGroup(j);
+                } else {
+                    createSelectGroup(j);
                 }
-
-                pollAnswers.appendChild(answerElements);
-
-            } else {
-                var answersSelect = document.createElement('select');
-                answersSelect.setAttribute('id', 'select-element');
-                answersSelect.onchange = selectAnswerClick;
-
-                var blank = document.createElement('option');
-                blank.innerText = 'Выберите вариант ответа';
-                blank.selected = true;
-                blank.disabled = true;
-
-                answerElements.appendChild(blank);
-
-                var answerOption;
-
-                for (i = 0; i < answers.length; i++) {
-                    answerOption = document.createElement('option');
-                    answerOption.setAttribute('value', answers[i].id);
-                    answerOption.setAttribute('id', answers[i].id);
-                    answerOption.innerText = answers[i].name;
-
-                    answerElements.appendChild(answerOption);
-                }
-                answersSelect.appendChild(answerElements);
-                pollAnswers.appendChild(answersSelect);
             }
-
             var h = document.getElementById('selected-poll').offsetHeight;
             var hp = document.getElementById('poll-content').offsetHeight;
 
@@ -301,18 +263,80 @@
             pollPreview.style.width = '100%';
             pollPreview.src = url;
         }
+        //Создать радиогруппу ответов для j-ого вопроса
+        var createRadioGroup = function (j) {
+            var answerElements = document.createDocumentFragment();
+            var answerContainer;
+            var answerLabel;
+            var answerRadioButton;
+
+            for (var i = 0; i < answers[j].length; i++) {
+                var answer = answers[j][i];
+                answerRadioButton = document.createElement('input');
+                answerRadioButton.setAttribute('type', 'radio');
+                answerRadioButton.setAttribute('name', 'radio-answers_' + j);
+                answerRadioButton.setAttribute('value', answer.id);
+                answerRadioButton.setAttribute('id', answer.id);
+
+                answerRadioButton.onchange = function () { selectAnswerClick(event, j); }
+
+                answerLabel = document.createElement('label');
+                answerLabel.setAttribute('for', answer);
+                answerLabel.innerText = answer.name;
+
+                answerContainer = document.createElement('span');
+                answerContainer.appendChild(answerRadioButton);
+                answerContainer.appendChild(answerLabel);
+
+                answerElements.appendChild(answerContainer);
+            }
+
+            addAnswers(answerElements);
+        }
+        //Создать выпадающий список ответов для j-ого вопроса
+        var createSelectGroup = function (j) {
+            var answerElements = document.createDocumentFragment();
+            var answersSelect = document.createElement('select');
+            answersSelect.setAttribute('id', 'select-answers_' + j);
+            answersSelect.setAttribute('name', 'select-answers');
+
+            answersSelect.onchange = function () { selectAnswerClick(event, j); }
+
+            var blank = document.createElement('option');
+            blank.innerText = 'Выберите вариант ответа';
+            blank.selected = true;
+            blank.disabled = true;
+
+            answerElements.appendChild(blank);
+
+            var answerOption;
+
+            for (var i = 0; i < answers[j].length; i++) {
+                var answer = answers[j][i];
+                answerOption = document.createElement('option');
+                answerOption.setAttribute('value', answer.id);
+                answerOption.setAttribute('id', answer.id);
+                answerOption.innerText = answer.name;
+
+                answerElements.appendChild(answerOption);
+            }
+            answersSelect.appendChild(answerElements);
+            addAnswers(answersSelect);
+        }
 
         // Получить вопрос
         var getIssue = function (response) {
-            var rawIssue = response.Issue;
-            var rawAnswers = response.Answers;
+            for (var j = 0; j < response.length; j++) {
+                var rawIssue = response[j].Issue;
+                var rawAnswers = response[j].Answers;
 
-            issue = { id: rawIssue.Id, name: rawIssue.Name };
-
-            for (var i = 0; i < rawAnswers.length; i++) {
-                answers.push({ id: rawAnswers[i].Id, name: rawAnswers[i].Name });
+                issue.push({ id: rawIssue.Id, name: rawIssue.Name });
+                var tmpAnswers = [];
+                for (var i = 0; i < rawAnswers.length; i++) {
+                    tmpAnswers.push({ id: rawAnswers[i].Id, name: rawAnswers[i].Name });
+                }
+                answers.push(tmpAnswers);
             }
-
             if (url == null) {
                 viewManager('fpoll');
             } else if (url.length > 0) {
@@ -335,7 +359,7 @@
 
         // Активировать конкретный опрос
         var activatePoll = function (event) {
-            issue = {};
+            issue = [];
             answers = [];
             url = '';
 
@@ -346,28 +370,44 @@
             }
         }
 
+        var addTitle = function (str) {
+            var title = document.getElementById('poll-title');
+            var td = document.createElement('td');
+            var span = document.createElement('span');
+            span.innerText = str;
+            td.appendChild(span);
+            title.appendChild(td);
+        }
+
+        var addAnswers = function (node) {
+            var answers = document.getElementById('poll-answers');
+            var td = document.createElement('td');
+            td.appendChild(node);
+            answers.appendChild(td);
+        }
+
         //#endregion
 
 
         //Обработка нажатий на клавиатуру
-//        document.onkeyup = function (event) {
-//            var code = event.keyCode;
-//            var ch = String.fromCharCode(code);
-//            //Для начальной страницы
-//            if (code == 36) document.location.href = "/";
-//            var number;
-//            if (code > 48 && code < 58) {
-//                number = code - 49;
-//            } else if (code > 96 && code < 106) {
-//                number = code - 97;
-//            } else return;
-//            var ol = document.getElementById("avalibale-polls").childNodes;
-//            var len = ol.length;
-//            if (len > 0 && len >= number) {
-//                var url = ol.item(number).firstChild.attributes['href'].value;
-//                document.location.href = url;
-//            }
-//        }
+        //        document.onkeyup = function (event) {
+        //            var code = event.keyCode;
+        //            var ch = String.fromCharCode(code);
+        //            //Для начальной страницы
+        //            if (code == 36) document.location.href = "/";
+        //            var number;
+        //            if (code > 48 && code < 58) {
+        //                number = code - 49;
+        //            } else if (code > 96 && code < 106) {
+        //                number = code - 97;
+        //            } else return;
+        //            var ol = document.getElementById("avalibale-polls").childNodes;
+        //            var len = ol.length;
+        //            if (len > 0 && len >= number) {
+        //                var url = ol.item(number).firstChild.attributes['href'].value;
+        //                document.location.href = url;
+        //            }
+        //        }
 
         window.onload = initPolls;
     </script>
